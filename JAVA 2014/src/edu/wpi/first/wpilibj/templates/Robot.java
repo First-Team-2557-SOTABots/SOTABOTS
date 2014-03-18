@@ -46,34 +46,42 @@ public class Robot extends SimpleRobot {
     String[]   vision_coord         = null;
 
     public void autonomous() {
-        compressor.start();
-        winchEncoder.start();
+//        compressor.start();
+//        winchEncoder.start();
         //intake_1.set(true); //Competition
         //intake_2.set(false);
-        intakeArmUp.set(false); //Practice
-        intakeArmDown.set(true);
-        wench.set(0);
-        unlatch.set(false);
-        latch.set(true);
-        leftDrive.reset();
-        rightDrive.reset();
-        leftDrive.start();
-        rightDrive.start();
-        drive.setSafetyEnabled(false);
-        drive.stopMotor();
-        while (leftDrive.get() > -3400) {
-            drive.arcadeDrive(-1,0);
-            System.out.println(leftDrive.get());
-        }
-        drive.stopMotor();
-        leftDrive.reset();
-        rightDrive.reset();
+//        intakeArmUp.set(false); //Practice
+//        intakeArmDown.set(true);
+//        wench.set(0);
+//        unlatch.set(false);
+//        latch.set(true);
+//        leftDrive.reset();
+//        rightDrive.reset();
+//        leftDrive.start();
+//        rightDrive.start();
+//        drive.setSafetyEnabled(false);
+//        drive.stopMotor();
+//        while (leftDrive.get() > -3400) {
+//            drive.arcadeDrive(-1,0);
+//            System.out.println(leftDrive.get());
+//        }
+        System.out.println("I went forward.");
+//        drive.stopMotor();
+//        leftDrive.reset();
+//        rightDrive.reset();
         Timer.delay(1); // Wait for n seconds in this instance for the ball to settle in the Catapult arm.
-        while (latch.get()) {
-            if (pi.get()) {    //checks digital signal from raspberry pi -- once, not every 4s.
+        System.out.println("I got nothin.");
+        while (true) {
+            Timer.delay(.25);
+            System.out.println(!pi.get());
+            if (!pi.get()) {    //checks digital signal from raspberry pi -- once, not every 4s.
                 //Initiates the trigger system upon pi detection.
-                unlatch.set(true); // Trigger system (Dual solenoid)
-                latch.set(false);
+//                unlatch.set(true); // Trigger system (Dual solenoid)
+//                latch.set(false);
+                System.out.println("I flung a ball with the flingy thing.");
+            }
+            else{
+                System.out.println("Still nothin.");
             }
         }
     }
