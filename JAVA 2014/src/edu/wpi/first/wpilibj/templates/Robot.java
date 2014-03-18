@@ -26,9 +26,8 @@ public class Robot extends SimpleRobot {
     DigitalOutput mode_3            = new DigitalOutput(10);  
     DigitalOutput mode_4            = new DigitalOutput(11);
     DigitalOutput mode_5            = new DigitalOutput(12);
-    SmartDashboard dash             = new SmartDashboard();
-    Timer         time_1            = new Timer();
     DigitalOutput[] modes           = new DigitalOutput[] {mode_1,mode_2,mode_3, mode_4, mode_5};
+    // Avery. It is your job to clean this up and replace it all with PROPER value checks.
     boolean    intakeDown           = true;
     int        intake               = 0;
     boolean    shifted              = false;
@@ -39,18 +38,13 @@ public class Robot extends SimpleRobot {
     boolean    winding              = false;
     boolean    killme               = false;
     String     latched              = "Unlatched";
-    
     double     driveLeft            = 0;
     double     driveRight           = 0;
-    
     int        modeIndex            = 0;
-    
     int        cycle                = 0;
-    
     double[]   coordinates          = null;
     String[]   vision_coord         = null;
 
-        
     public void autonomous() {
         compressor.start();
         winchEncoder.start();
@@ -62,44 +56,24 @@ public class Robot extends SimpleRobot {
         intakeDown = true;
         lock_1.set(false);
         lock_2.set(true);
-        time_1.reset();
-        time_1.start();
         drive_1.reset();
         drive_1.start();
         drive.setSafetyEnabled(false);
         drive.arcadeDrive(0,0);
-        while (time_1.get() < 0.5) {
-            lock_1.set(false);
-            lock_2.set(true);
-            drive.arcadeDrive(0,0);
-        }
-        while (drive_1.get() > -3250) {
+        while (drive_1.get() > -3400) {
             drive.arcadeDrive(-1,0);
             System.out.println(drive_1.get());
-            time_1.reset();
         }
-        while (time_1.get() < 1.5) {
-            drive.arcadeDrive(0,0);
-            drive_1.reset();
-        }
-        if (pi.get()) {    //checks digital signal from raspberry pi -- once, not every 4s.
-            Timer.delay(4); //if the goal is not hot (i.e., pi.get() == true) we wait four seconds for the 
-        }                   //     goal to turn hot
-        else {
-            
-        }
-        while (time_1.get() >= 1.5 && time_1.get() < 2) {
-            //I'm assuming this is the trigger system.
-            //lock_1.set(true); // Competition bot
-            //lock_2.set(false);
-            lock_1.set(true); // Practise Bot
-            lock_2.set(false);
-            drive.arcadeDrive(0,0);
-            drive_1.reset();
-        }
-        
         drive.arcadeDrive(0,0);
-            
+        drive_1.reset();
+        Timer.delay(1); // Wait for n seconds in this instance for the ball to settle in the Catapult arm.
+        while (lock_2.get()) {
+            if (pi.get()) {    //checks digital signal from raspberry pi -- once, not every 4s.
+                //Initiates the trigger system upon pi detection.
+                lock_1.set(true); // Trigger system (Dual solenoid)
+                lock_2.set(false);
+            }
+        }
     }
 
     public void operatorControl() {
@@ -111,8 +85,6 @@ public class Robot extends SimpleRobot {
         drive.setSafetyEnabled(false);
 
         while (isOperatorControl() && isEnabled()) {
-            //System.out.println(Network.NetIn());
-            //SmartDashboard.putBoolean("LOCK", pressed);
             SmartDashboard.putString("LOCK STATE: ",latched);
             SmartDashboard.putNumber("WINCH ENCODER: ", winchEncoder.get());
             SmartDashboard.putNumber("LED MODE: ", modeIndex);
