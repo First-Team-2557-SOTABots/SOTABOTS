@@ -12,15 +12,15 @@ public class Robot extends SimpleRobot {
     Compressor compressor           = new Compressor(14,1);
     DigitalInput lim_switch         = new DigitalInput(1);
     DigitalInput pi                 = new DigitalInput(13);
-    Solenoid   intake_1             = new Solenoid(1);
-    Solenoid   intake_2             = new Solenoid(2);
+    Solenoid   intakeArmUp             = new Solenoid(1);
+    Solenoid   intakeArmDown             = new Solenoid(2);
     Solenoid   shift_1              = new Solenoid(3);
     Solenoid   shift_2              = new Solenoid(4);
-    Solenoid   lock_1               = new Solenoid(5);
-    Solenoid   lock_2               = new Solenoid(6);
+    Solenoid   unlatch               = new Solenoid(5);
+    Solenoid   latch               = new Solenoid(6);
     Encoder    winchEncoder         = new Encoder(6,7);
-    Encoder    drive_1              = new Encoder(2,3);
-    Encoder    drive_2              = new Encoder(4,5);
+    Encoder    leftDrive              = new Encoder(2,3);
+    Encoder    rightDrive              = new Encoder(4,5);
     DigitalOutput mode_1            = new DigitalOutput(8);
     DigitalOutput mode_2            = new DigitalOutput(9);   
     DigitalOutput mode_3            = new DigitalOutput(10);  
@@ -50,28 +50,30 @@ public class Robot extends SimpleRobot {
         winchEncoder.start();
         //intake_1.set(true); //Competition
         //intake_2.set(false);
-        intake_1.set(false); //Practice
-        intake_2.set(true);
+        intakeArmUp.set(false); //Practice
+        intakeArmDown.set(true);
         wench.set(0);
-        intakeDown = true;
-        lock_1.set(false);
-        lock_2.set(true);
-        drive_1.reset();
-        drive_1.start();
+        unlatch.set(false);
+        latch.set(true);
+        leftDrive.reset();
+        rightDrive.reset();
+        leftDrive.start();
+        rightDrive.start();
         drive.setSafetyEnabled(false);
-        drive.arcadeDrive(0,0);
-        while (drive_1.get() > -3400) {
+        drive.stopMotor();
+        while (leftDrive.get() > -3400) {
             drive.arcadeDrive(-1,0);
-            System.out.println(drive_1.get());
+            System.out.println(leftDrive.get());
         }
-        drive.arcadeDrive(0,0);
-        drive_1.reset();
+        drive.stopMotor();
+        leftDrive.reset();
+        rightDrive.reset();
         Timer.delay(1); // Wait for n seconds in this instance for the ball to settle in the Catapult arm.
-        while (lock_2.get()) {
+        while (latch.get()) {
             if (pi.get()) {    //checks digital signal from raspberry pi -- once, not every 4s.
                 //Initiates the trigger system upon pi detection.
-                lock_1.set(true); // Trigger system (Dual solenoid)
-                lock_2.set(false);
+                unlatch.set(true); // Trigger system (Dual solenoid)
+                latch.set(false);
             }
         }
     }
@@ -80,8 +82,8 @@ public class Robot extends SimpleRobot {
         compressor.start();
         winchEncoder.start();
         wench.set(0);
-        drive_1.start();
-        drive_1.reset();
+        leftDrive.start();
+        leftDrive.reset();
         drive.setSafetyEnabled(false);
 
         while (isOperatorControl() && isEnabled()) {
@@ -125,7 +127,7 @@ public class Robot extends SimpleRobot {
             // Print line to print something from the network to the
             // driveStation. Avery
             //if (leftStick.getRawButton(12)) {
-                //System.out.println(Network.NetIn()[0] + " " + drive_1.get());
+                //System.out.println(Network.NetIn()[0] + " " + leftDrive.get());
             //}
             // Cycle the modeindex for the LED controls.
             if (leftStick.getTrigger()) {
@@ -164,36 +166,36 @@ public class Robot extends SimpleRobot {
             else if (lim_switch.get() == false && rightStick.getRawButton(2)) {
                 //winchEncoder.reset(); <-- Is this needed? If not, remove it.
                 winding = true;
-                lock_1.set(false);
-                lock_2.set(true);
+                unlatch.set(false);
+                latch.set(true);
                 latched = "Latched";
             }
             // This is set differently between practice and competition bots
             // because the nylon stop length is (and will be) different.
             else if (lim_switch.get() == false && winchEncoder.get() < 510 && winding) { //put back to 550 for competition bot!
                 pressed = true;
-                lock_1.set(false);
-                lock_2.set(true);
+                unlatch.set(false);
+                latch.set(true);
                 wench.set(.8);
             }
             // Unlatch AKA: Shoot
             else if (rightStick.getTrigger()) {
                 pressed = false;
-                lock_1.set(true);
-                lock_2.set(false);
+                unlatch.set(true);
+                latch.set(false);
                 wench.set(rightStick.getAxis(Joystick.AxisType.kY));
                 latched = "Unlatched";
             }
             else if (pressed && winchEncoder.get() >= 510) { //put back to 550 for competition bot!
-                lock_1.set(false);
-                lock_2.set(true);
+                unlatch.set(false);
+                latch.set(true);
                 winding = false;
                 wench.stopMotor();
             }
             else  if (pressed == false) {
                 wench.set(rightStick.getAxis(Joystick.AxisType.kY));
-                lock_1.set(true);
-                lock_2.set(false);
+                unlatch.set(true);
+                latch.set(false);
             }
             
             if (rightStick.getRawButton(5)) {
@@ -205,12 +207,12 @@ public class Robot extends SimpleRobot {
             
 /*intake-down*/
             if (intakeDown) {
-                intake_1.set(true); //SWITCH FOR practice BOT!
-                intake_2.set(false);
+                intakeArmUp.set(true); //SWITCH FOR practice BOT!
+                intakeArmDown.set(false);
             }
             else {
-                intake_1.set(false);
-                intake_2.set(true);
+                intakeArmUp.set(false);
+                intakeArmDown.set(true);
             }
 /*shifters*/if (shifted) {
                 shift_1.set(true);
