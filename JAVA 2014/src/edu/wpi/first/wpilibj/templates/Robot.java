@@ -29,7 +29,7 @@ public class Robot extends SimpleRobot {
     DigitalOutput[] modes           = new DigitalOutput[] {mode_1,mode_2,mode_3, mode_4, mode_5};
     Timer time = new Timer();
     // Avery. It is your job to clean this up and replace it all with PROPER value checks.
-    boolean    intakeDown           = true;
+    boolean    intakeDown           = intakeArmDown.get();
     int        intake               = 0;
     boolean    shifted              = false;
     boolean    shoot_1              = false;
@@ -80,6 +80,7 @@ public class Robot extends SimpleRobot {
                 latch.set(false);
                 System.out.println("I flung a ball with the flingy thing because, pi told me to.");
             }
+            //Shoots even if the pi doesn't say anything to it as a fail-safe.
             else if(time.get() >= 8.9){
                 System.out.println("Bad pi no signal I will shoot anyway.");
                 unlatch.set(true);
