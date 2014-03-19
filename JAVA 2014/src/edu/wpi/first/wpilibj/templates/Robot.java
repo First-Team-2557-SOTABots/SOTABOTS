@@ -9,9 +9,9 @@ public class Robot extends SimpleRobot {
     RobotDrive drive                = new RobotDrive(1,2);
     Talon      intakeMotor          = new Talon(3);
     Talon      wench                = new Talon(4);
-    Compressor compressor           = new Compressor(14,1);
+    Compressor compressor           = new Compressor(13,1);
     DigitalInput lim_switch         = new DigitalInput(1);
-    DigitalInput pi                 = new DigitalInput(13);
+    DigitalInput pi                 = new DigitalInput(14);
     Solenoid   intakeArmUp             = new Solenoid(1);
     Solenoid   intakeArmDown             = new Solenoid(2);
     Solenoid   shift_1              = new Solenoid(3);
@@ -27,6 +27,7 @@ public class Robot extends SimpleRobot {
     DigitalOutput mode_4            = new DigitalOutput(11);
     DigitalOutput mode_5            = new DigitalOutput(12);
     DigitalOutput[] modes           = new DigitalOutput[] {mode_1,mode_2,mode_3, mode_4, mode_5};
+    Timer time = new Timer();
     // Avery. It is your job to clean this up and replace it all with PROPER value checks.
     boolean    intakeDown           = true;
     int        intake               = 0;
@@ -46,42 +47,43 @@ public class Robot extends SimpleRobot {
     String[]   vision_coord         = null;
 
     public void autonomous() {
-//        compressor.start();
-//        winchEncoder.start();
-        //intake_1.set(true); //Competition
-        //intake_2.set(false);
+        time.reset();
+        time.start();
+        compressor.start();
+        winchEncoder.start();
+        intakeArmUp.set(true); //Competition
+        intakeArmUp.set(false);
 //        intakeArmUp.set(false); //Practice
 //        intakeArmDown.set(true);
-//        wench.set(0);
-//        unlatch.set(false);
-//        latch.set(true);
-//        leftDrive.reset();
-//        rightDrive.reset();
-//        leftDrive.start();
-//        rightDrive.start();
-//        drive.setSafetyEnabled(false);
-//        drive.stopMotor();
-//        while (leftDrive.get() > -3400) {
-//            drive.arcadeDrive(-1,0);
-//            System.out.println(leftDrive.get());
-//        }
-        System.out.println("I went forward.");
-//        drive.stopMotor();
-//        leftDrive.reset();
-//        rightDrive.reset();
+        wench.set(0);
+        unlatch.set(false);
+        latch.set(true);
+        leftDrive.reset();
+        rightDrive.reset();
+        leftDrive.start();
+        rightDrive.start();
+        drive.setSafetyEnabled(false);
+        drive.stopMotor();
+        while (leftDrive.get() > -3400) {
+            drive.arcadeDrive(-1,0);
+            System.out.println(leftDrive.get());
+        }
+        drive.stopMotor();
+        leftDrive.reset();
+        rightDrive.reset();
+        System.out.println("I drove forward I think...");
         Timer.delay(1); // Wait for n seconds in this instance for the ball to settle in the Catapult arm.
-        System.out.println("I got nothin.");
-        while (true) {
-            Timer.delay(.25);
-            System.out.println(!pi.get());
-            if (!pi.get()) {    //checks digital signal from raspberry pi -- once, not every 4s.
+        while (latch.get()) {
+            if (pi.get()) {    //checks digital signal from raspberry pi -- once, not every 4s.
                 //Initiates the trigger system upon pi detection.
-//                unlatch.set(true); // Trigger system (Dual solenoid)
-//                latch.set(false);
-                System.out.println("I flung a ball with the flingy thing.");
+                unlatch.set(true); // Trigger system (Dual solenoid)
+                latch.set(false);
+                System.out.println("I flung a ball with the flingy thing because, pi told me to.");
             }
-            else{
-                System.out.println("Still nothin.");
+            else if(time.get() >= 8.9){
+                System.out.println("Bad pi no signal I will shoot anyway.");
+                unlatch.set(true);
+                latch.set(false);
             }
         }
     }
