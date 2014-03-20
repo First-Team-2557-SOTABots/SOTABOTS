@@ -9,9 +9,9 @@ public class Robot extends SimpleRobot {
     RobotDrive drive                = new RobotDrive(1,2);
     Talon      intakeMotor          = new Talon(3);
     Talon      wench                = new Talon(4);
-    Compressor compressor           = new Compressor(13,1);
+    Compressor compressor           = new Compressor(14,1);
     DigitalInput lim_switch         = new DigitalInput(1);
-    DigitalInput pi                 = new DigitalInput(14);
+    DigitalInput pi                 = new DigitalInput(13);
     Solenoid   intakeArmUp             = new Solenoid(1);
     Solenoid   intakeArmDown             = new Solenoid(2);
     Solenoid   shift_1              = new Solenoid(3);
@@ -51,10 +51,10 @@ public class Robot extends SimpleRobot {
         time.start();
         compressor.start();
         winchEncoder.start();
-        intakeArmUp.set(true); //Competition
-        intakeArmUp.set(false);
-//        intakeArmUp.set(false); //Practice
-//        intakeArmDown.set(true);
+//        intakeArmUp.set(true); //Competition
+//        intakeArmUp.set(false);
+        intakeArmUp.set(false); //Practice
+        intakeArmDown.set(true);
         wench.set(0);
         unlatch.set(false);
         latch.set(true);
@@ -256,6 +256,6 @@ public class Robot extends SimpleRobot {
     }
     
     public void test() {
-        
+        compressor.start();
     }
 }
