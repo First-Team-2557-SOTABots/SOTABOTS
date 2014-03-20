@@ -1,78 +1,84 @@
 package edu.wpi.first.wpilibj.templates;
 
 import edu.wpi.first.wpilibj.*;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends SimpleRobot {
-    Joystick   leftStick = new Joystick(1);
-    Joystick   rightStick = new Joystick(2);
+    //Initializes joysticks.
+    Joystick leftStick = new Joystick(1);
+    Joystick rightStick = new Joystick(2);
+    //Initializes the motors.
     RobotDrive drive = new RobotDrive(1,2);
-    Talon      intakeMotor = new Talon(3);
-    Talon      winch = new Talon(4);
+    Talon intakeMotor = new Talon(3);
+    Talon winch = new Talon(4);
+    //Initializes the compressor.
     Compressor compressor = new Compressor(14,1);
+    //Initalizes the digital input port.
     DigitalInput lim_switch = new DigitalInput(1);
     DigitalInput pi = new DigitalInput(13);
-    Solenoid   intakeArmDown = new Solenoid(1);
-    Solenoid   intakeArmUp = new Solenoid(2);
-    Solenoid   shift_1 = new Solenoid(3);
-    Solenoid   shift_2 = new Solenoid(4);
-    Solenoid   unlatch = new Solenoid(5);
-    Solenoid   latch = new Solenoid(6);
-    Encoder    winchEncoder = new Encoder(6,7);
-    Encoder    leftDrive = new Encoder(2,3);
-    Encoder    rightDrive = new Encoder(4,5);
-    DigitalOutput mode_1 = new DigitalOutput(8);
-    DigitalOutput mode_2 = new DigitalOutput(9);   
-    DigitalOutput mode_3 = new DigitalOutput(10);  
-    DigitalOutput mode_4 = new DigitalOutput(11);
-    DigitalOutput mode_5 = new DigitalOutput(12);
-    DigitalOutput[] modes = new DigitalOutput[] {mode_1,mode_2,mode_3, mode_4, mode_5};
+    //Intializes the pneumatic solenoids.
+    Solenoid intakeArmDown = new Solenoid(1);
+    Solenoid intakeArmUp = new Solenoid(2);
+    Solenoid shift_1 = new Solenoid(3);
+    Solenoid shift_2 = new Solenoid(4);
+    Solenoid unlatch = new Solenoid(5);
+    Solenoid latch = new Solenoid(6);
+    //Initializes the encoders.
+    Encoder winchEncoder = new Encoder(6,7);
+    Encoder leftDrive = new Encoder(2,3);
+    Encoder rightDrive = new Encoder(4,5);
+    //Initializes the digital output ports.
+    DigitalOutput yellowLED = new DigitalOutput(8);
+    DigitalOutput redLED = new DigitalOutput(9);   
+    DigitalOutput blueLED = new DigitalOutput(10);  
+    DigitalOutput muricaLED = new DigitalOutput(11);
+    DigitalOutput groovyLED = new DigitalOutput(12);
+    //Initializes the digital array of LED modes.
+    DigitalOutput[] modes = new DigitalOutput[] {yellowLED,redLED,blueLED, muricaLED, groovyLED};
+    //Initializes the timer.
     Timer time = new Timer();
-    boolean    intakeDown = intakeArmUp.get();
-    boolean    shifted = false;
-    boolean    shoot_1 = false;
-    boolean    shoot_2 = false;
-    boolean    shoot_3 = false;
-    boolean    pressed = false;
-    boolean    winding = winch.get() != 0;
-    boolean    killme = false;
-    String     latched = "Unlatched";
-    double     driveLeft = 0;
-    double     driveRight = 0;
-    int        modeIndex = 0;
-    int        cycle = 0;
-    double[]   coordinates = null;
-    String[]   vision_coord = null;
+    //Intializes the floating variables.
+    boolean intakeDown = intakeArmUp.get();
+    boolean pressed = lim_switch.get();
+    boolean winding = winch.get() != 0;
+    int modeIndex = 0;
 
     public void autonomous() {
+        //Stsrats the timer.
         time.reset();
         time.start();
+        //Starts the compressor.
         compressor.start();
+        //Starts the winch encoder.
         winchEncoder.start();
-//        intakeArmDown.set(true); //Competition
-//        intakeArmDown.set(false);
-        intakeArmDown.set(true); //Practice
+        //Puts down the arm.
+        intakeArmDown.set(true);
         intakeArmUp.set(false);
-        winch.set(0);
+        //Makes sure the winch is not moving.
+        winch.stopMotor();
+        //Makes sure the winch is latched.
         unlatch.set(false);
         latch.set(true);
+        //Resets drive encoders.
         leftDrive.reset();
         rightDrive.reset();
         leftDrive.start();
         rightDrive.start();
+        //Disables the instant brake on the motors.
         drive.setSafetyEnabled(false);
+        //Makes sure the robot is not ghosting forward or backwards.
         drive.stopMotor();
+        //Drives forward.
         while (leftDrive.get() > -3400) {
             drive.arcadeDrive(-1,0);
             System.out.println(leftDrive.get());
         }
+        //Stopa moving.
         drive.stopMotor();
-        leftDrive.reset();
-        rightDrive.reset();
-        System.out.println("I drove forward I think...");
-        Timer.delay(1); // Wait for n seconds in this instance for the ball to settle in the Catapult arm.
+        System.out.println("I drove forward towarsds the big goals.");
+        Timer.delay(2); // Wait for 2 seconds in this instance for the ball to settle in the Catapult arm.
+        //Stays and waits for the pi until the catapult fires.
         while (latch.get()) {
-            if (pi.get()) {    //checks digital signal from raspberry pi -- once, not every 4s.
+            if (!pi.get()) {    //checks digital signal from raspberry pi -- once, not every 4s.
                 //Initiates the trigger system upon pi detection.
                 unlatch.set(true); // Trigger system (Dual solenoid)
                 latch.set(false);
@@ -96,9 +102,6 @@ public class Robot extends SimpleRobot {
         drive.setSafetyEnabled(false);
 
         while (isOperatorControl() && isEnabled()) {
-            SmartDashboard.putString("LOCK STATE: ",latched);
-            SmartDashboard.putNumber("WINCH ENCODER: ", winchEncoder.get());
-            SmartDashboard.putNumber("LED MODE: ", modeIndex);
             //If an improper modeIndex value is given, this will reset to 0.
             if (modeIndex > 4) {
                 modeIndex = 0;
@@ -123,9 +126,13 @@ public class Robot extends SimpleRobot {
             }
             // Supershifter state
             if (leftStick.getRawButton(3)) {
-                shifted = true;}
+                shift_1.set(true);
+                shift_2.set(false);
+            }
             else if (leftStick.getRawButton(4)) {
-                shifted = false;}
+                shift_1.set(false);
+                shift_2.set(true);
+            }
             // Intake arm state
             else if (leftStick.getRawButton(5)) {
                 intakeDown = false; // up
@@ -168,27 +175,21 @@ public class Robot extends SimpleRobot {
                 winchEncoder.reset();
             }
             else if (lim_switch.get() == false && rightStick.getRawButton(2)) {
-                //winchEncoder.reset(); <-- Is this needed? If not, remove it.
-                winding = true;
                 unlatch.set(false);
                 latch.set(true);
-                latched = "Latched";
             }
             // This is set differently between practice and competition bots
             // because the nylon stop length is (and will be) different.
             else if (lim_switch.get() == false && winchEncoder.get() < 510 && winding) { //put back to 550 for competition bot!
-                pressed = true;
                 unlatch.set(false);
                 latch.set(true);
                 winch.set(.8);
             }
             // Unlatch AKA: Shoot
             else if (rightStick.getTrigger()) {
-                pressed = false;
                 unlatch.set(true);
                 latch.set(false);
                 winch.set(rightStick.getAxis(Joystick.AxisType.kY));
-                latched = "Unlatched";
             }
             else if (pressed && winchEncoder.get() >= 510) { //put back to 550 for competition bot!
                 unlatch.set(false);
@@ -214,17 +215,7 @@ public class Robot extends SimpleRobot {
                 intakeArmDown.set(false);
                 intakeArmUp.set(true);
             }
-/*shifters*/if (shifted) {
-                shift_1.set(true);
-                shift_2.set(false);
-            }
-            else {
-                shift_1.set(false);
-                shift_2.set(true);}
-
-            
-            Timer.delay(.01);
-            
+            Timer.delay(.001);
         }
     }    
     
