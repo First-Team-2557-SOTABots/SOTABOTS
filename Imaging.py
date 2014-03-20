@@ -22,5 +22,5 @@ while True:
 	print coordinates
 	if(coordinates):
 		#Uses the call function to call to Gpio with sudo.
-		call("sudo /home/pi/Desktop/SimpleCV/FINAL/GpioTrue.py", shell=True)
+		call("sudo /home/pi/Desktop/SimpleCV/FINAL/Gpio.py", shell=True)
 exit()
