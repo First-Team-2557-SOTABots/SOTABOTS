@@ -4,58 +4,56 @@ import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends SimpleRobot {
-    Joystick   leftStick            = new Joystick(1);
-    Joystick   rightStick           = new Joystick(2);
-    RobotDrive drive                = new RobotDrive(1,2);
-    Talon      intakeMotor          = new Talon(3);
-    Talon      wench                = new Talon(4);
-    Compressor compressor           = new Compressor(14,1);
-    DigitalInput lim_switch         = new DigitalInput(1);
-    DigitalInput pi                 = new DigitalInput(13);
-    Solenoid   intakeArmUp             = new Solenoid(1);
-    Solenoid   intakeArmDown             = new Solenoid(2);
-    Solenoid   shift_1              = new Solenoid(3);
-    Solenoid   shift_2              = new Solenoid(4);
-    Solenoid   unlatch               = new Solenoid(5);
-    Solenoid   latch               = new Solenoid(6);
-    Encoder    winchEncoder         = new Encoder(6,7);
-    Encoder    leftDrive              = new Encoder(2,3);
-    Encoder    rightDrive              = new Encoder(4,5);
-    DigitalOutput mode_1            = new DigitalOutput(8);
-    DigitalOutput mode_2            = new DigitalOutput(9);   
-    DigitalOutput mode_3            = new DigitalOutput(10);  
-    DigitalOutput mode_4            = new DigitalOutput(11);
-    DigitalOutput mode_5            = new DigitalOutput(12);
-    DigitalOutput[] modes           = new DigitalOutput[] {mode_1,mode_2,mode_3, mode_4, mode_5};
+    Joystick   leftStick = new Joystick(1);
+    Joystick   rightStick = new Joystick(2);
+    RobotDrive drive = new RobotDrive(1,2);
+    Talon      intakeMotor = new Talon(3);
+    Talon      winch = new Talon(4);
+    Compressor compressor = new Compressor(14,1);
+    DigitalInput lim_switch = new DigitalInput(1);
+    DigitalInput pi = new DigitalInput(13);
+    Solenoid   intakeArmDown = new Solenoid(1);
+    Solenoid   intakeArmUp = new Solenoid(2);
+    Solenoid   shift_1 = new Solenoid(3);
+    Solenoid   shift_2 = new Solenoid(4);
+    Solenoid   unlatch = new Solenoid(5);
+    Solenoid   latch = new Solenoid(6);
+    Encoder    winchEncoder = new Encoder(6,7);
+    Encoder    leftDrive = new Encoder(2,3);
+    Encoder    rightDrive = new Encoder(4,5);
+    DigitalOutput mode_1 = new DigitalOutput(8);
+    DigitalOutput mode_2 = new DigitalOutput(9);   
+    DigitalOutput mode_3 = new DigitalOutput(10);  
+    DigitalOutput mode_4 = new DigitalOutput(11);
+    DigitalOutput mode_5 = new DigitalOutput(12);
+    DigitalOutput[] modes = new DigitalOutput[] {mode_1,mode_2,mode_3, mode_4, mode_5};
     Timer time = new Timer();
-    // Avery. It is your job to clean this up and replace it all with PROPER value checks.
-    boolean    intakeDown           = intakeArmDown.get();
-    int        intake               = 0;
-    boolean    shifted              = false;
-    boolean    shoot_1              = false;
-    boolean    shoot_2              = false;
-    boolean    shoot_3              = false;
-    boolean    pressed              = false;
-    boolean    winding              = false;
-    boolean    killme               = false;
-    String     latched              = "Unlatched";
-    double     driveLeft            = 0;
-    double     driveRight           = 0;
-    int        modeIndex            = 0;
-    int        cycle                = 0;
-    double[]   coordinates          = null;
-    String[]   vision_coord         = null;
+    boolean    intakeDown = intakeArmUp.get();
+    boolean    shifted = false;
+    boolean    shoot_1 = false;
+    boolean    shoot_2 = false;
+    boolean    shoot_3 = false;
+    boolean    pressed = false;
+    boolean    winding = winch.get() != 0;
+    boolean    killme = false;
+    String     latched = "Unlatched";
+    double     driveLeft = 0;
+    double     driveRight = 0;
+    int        modeIndex = 0;
+    int        cycle = 0;
+    double[]   coordinates = null;
+    String[]   vision_coord = null;
 
     public void autonomous() {
         time.reset();
         time.start();
         compressor.start();
         winchEncoder.start();
-//        intakeArmUp.set(true); //Competition
-//        intakeArmUp.set(false);
-        intakeArmUp.set(false); //Practice
-        intakeArmDown.set(true);
-        wench.set(0);
+//        intakeArmDown.set(true); //Competition
+//        intakeArmDown.set(false);
+        intakeArmDown.set(true); //Practice
+        intakeArmUp.set(false);
+        winch.set(0);
         unlatch.set(false);
         latch.set(true);
         leftDrive.reset();
@@ -92,7 +90,7 @@ public class Robot extends SimpleRobot {
     public void operatorControl() {
         compressor.start();
         winchEncoder.start();
-        wench.set(0);
+        winch.set(0);
         leftDrive.start();
         leftDrive.reset();
         drive.setSafetyEnabled(false);
@@ -153,25 +151,20 @@ public class Robot extends SimpleRobot {
                 modeIndex = 2;
             }
             
-            // AutoVision INCOMPLETE
-            if (leftStick.getRawButton(9) && leftStick.getRawButton(10)) {
-                //target code here, pull from Vision class
-            }
-            
             // Right Joystick input assignments.
             // This controls the ball intake motor on the arm.
             if (rightStick.getRawButton(3)) {
-                intake = 1; // Intake
+                intakeMotor.set(1); // Intake
             }
             else if (rightStick.getRawButton(4)) {
-                intake = 2; // Expell
+                intakeMotor.set(-1); // Expell
             } else {
-                intake = 0; // Default (no Run)
+                intakeMotor.stopMotor(); // Default (no Run)
             }
             // Winch in, latch and auto-unwinch
             // Should probably have a step by step commenting for this. Frankie
             if (rightStick.getRawButton(2) && lim_switch.get() == true && pressed == false) {
-                wench.set(-1.);
+                winch.set(-1.);
                 winchEncoder.reset();
             }
             else if (lim_switch.get() == false && rightStick.getRawButton(2)) {
@@ -187,43 +180,39 @@ public class Robot extends SimpleRobot {
                 pressed = true;
                 unlatch.set(false);
                 latch.set(true);
-                wench.set(.8);
+                winch.set(.8);
             }
             // Unlatch AKA: Shoot
             else if (rightStick.getTrigger()) {
                 pressed = false;
                 unlatch.set(true);
                 latch.set(false);
-                wench.set(rightStick.getAxis(Joystick.AxisType.kY));
+                winch.set(rightStick.getAxis(Joystick.AxisType.kY));
                 latched = "Unlatched";
             }
             else if (pressed && winchEncoder.get() >= 510) { //put back to 550 for competition bot!
                 unlatch.set(false);
                 latch.set(true);
                 winding = false;
-                wench.stopMotor();
+                winch.stopMotor();
             }
             else  if (pressed == false) {
-                wench.set(rightStick.getAxis(Joystick.AxisType.kY));
+                winch.set(rightStick.getAxis(Joystick.AxisType.kY));
                 unlatch.set(true);
                 latch.set(false);
             }
             
             if (rightStick.getRawButton(5)) {
                 System.out.println(winchEncoder.get()); 
-           }
-            
-/*intake-m*/
-            SetIntakeMotor(intake);
-            
+           }    
 /*intake-down*/
             if (intakeDown) {
-                intakeArmUp.set(true); //SWITCH FOR practice BOT!
-                intakeArmDown.set(false);
+                intakeArmDown.set(true); //SWITCH FOR practice BOT!
+                intakeArmUp.set(false);
             }
             else {
-                intakeArmUp.set(false);
-                intakeArmDown.set(true);
+                intakeArmDown.set(false);
+                intakeArmUp.set(true);
             }
 /*shifters*/if (shifted) {
                 shift_1.set(true);
@@ -238,22 +227,6 @@ public class Robot extends SimpleRobot {
             
         }
     }    
-
-    private void SetIntakeMotor(int status) {
-        // Sets motion on the Intake motor on the arm.
-        if(status == 0)
-        {
-            intakeMotor.stopMotor(); // Stop
-        }
-        else if(status == 1)
-        {
-            intakeMotor.set(1); // Forward
-        }
-        else if(status == 2)
-        {
-            intakeMotor.set(-1); // Reverse
-        }
-    }
     
     public void test() {
         compressor.start();
