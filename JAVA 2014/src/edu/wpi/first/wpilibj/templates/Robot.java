@@ -88,20 +88,22 @@ public class Robot extends SimpleRobot {
         rightDrive.reset();
         System.out.println("I drove forward I think...");
         Timer.delay(2); // Wait for n seconds in this instance for the ball to settle in the Catapult arm.
-        while (latch.get()) {
-            if (pi.get()) {    //checks digital signal from raspberry pi -- once, not every 4s.
-                //Initiates the trigger system upon pi detection.
-                unlatch.set(true); // Trigger system (Dual solenoid)
-                latch.set(false);
-                System.out.println("I flung a ball with the flingy thing because, pi told me to.");
-            }
-            //Shoots even if the pi doesn't say anything to it as a fail-safe.
-            else if(time.get() >= 8){
-                System.out.println("Bad pi no signal I will shoot anyway.");
-                unlatch.set(true);
-                latch.set(false);
-            }
-        }
+        unlatch.set(true);
+        latch.set(false);
+//        while (latch.get()) {
+//            if (pi.get()) {    //checks digital signal from raspberry pi -- once, not every 4s.
+//                //Initiates the trigger system upon pi detection.
+//                unlatch.set(true); // Trigger system (Dual solenoid)
+//                latch.set(false);
+//                System.out.println("I flung a ball with the flingy thing because, pi told me to.");
+//            }
+//            //Shoots even if the pi doesn't say anything to it as a fail-safe.
+//            else if(time.get() >= 8){
+//                System.out.println("Bad pi no signal I will shoot anyway.");
+//                unlatch.set(true);
+//                latch.set(false);
+//            }
+//        }
     }
 
     public void operatorControl() {
