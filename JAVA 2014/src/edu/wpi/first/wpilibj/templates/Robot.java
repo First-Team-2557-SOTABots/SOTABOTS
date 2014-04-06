@@ -1,3 +1,20 @@
+/////THE ORGINIZATION/////
+//Table of Contents//
+//Line 63- Autonomous
+//Line 106- OperatorControl
+    //Line 119- LED setup
+    //*Left stick    
+        //Line 131- Drive action
+        //Line 158- LED cycling
+        //Line 172- Intake
+    //*Right stick
+        //Line 182- Latching - Bringing arm down
+        //Line 202- Firing
+        //Line 209- Winch Encoder - stoping the winding when latching
+        //Line 221- Printing Encoder count
+        //Line 224- Intake down
+        //Line 233- Shifters
+
 package edu.wpi.first.wpilibj.templates;
 
 import edu.wpi.first.wpilibj.*;
