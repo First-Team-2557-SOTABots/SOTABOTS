@@ -1,6 +1,7 @@
 /////THE ORGINIZATION/////
 //Table of Contents//
 //Line 63- Autonomous
+    //Line 94- Auto Winch
 //Line 106- OperatorControl
     //Line 119- LED setup
     //*Left stick    
@@ -90,7 +91,24 @@ public class Robot extends SimpleRobot {
         Timer.delay(2); // Wait for n seconds in this instance for the ball to settle in the Catapult arm.
         unlatch.set(true);
         latch.set(false);
-        
+        winchEncoder.reset();
+        while(winchEncoder.get() <= 510){ //Might get caught in its own loop, not sure -Antonio
+           unlatch.set(true);
+           latch.set(false);
+           winch.set(-1.);
+        }
+        winchEncoder.reset();
+        while(winchEncoder.get() <= 510){
+            unlatch.set(false);
+            latch.set(true);
+            winch.set(0);
+        }
+        if (lim_switch.get() == true){
+            System.out.println("I am ready to go!");
+        }
+        else{
+            System.out.println("For some reason I didn't wind far enough.");
+        }
 //        while (latch.get()) {
 //            if (pi.get()) {    //checks digital signal from raspberry pi -- once, not every 4s.
 //                //Initiates the trigger system upon pi detection.
@@ -254,6 +272,12 @@ public class Robot extends SimpleRobot {
                     unlatch.set(true);
                     latch.set(false);
                     winch.set(1.);
+                }
+                if(lim_switch.get() == false){
+                    System.out.println("The catapult has been unlatched succesfully.");
+                }
+                else{
+                    System.out.println("The catapult is still latched.");
                 }
             }
             Timer.delay(.01);
