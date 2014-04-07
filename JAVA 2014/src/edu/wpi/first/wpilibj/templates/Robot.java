@@ -8,13 +8,13 @@
         //Line 158- LED cycling
         //Line 172- Intake
     //*Right stick
-        //Line 182- Latching - Bringing arm down
+        //Line 185- Latching - Bringing arm down
         //Line 202- Firing
         //Line 209- Winch Encoder - stoping the winding when latching
         //Line 221- Printing Encoder count
         //Line 224- Intake down
         //Line 233- Shifters
-
+        //Line 244- Safe Release
 package edu.wpi.first.wpilibj.templates;
 
 import edu.wpi.first.wpilibj.*;
@@ -90,6 +90,7 @@ public class Robot extends SimpleRobot {
         Timer.delay(2); // Wait for n seconds in this instance for the ball to settle in the Catapult arm.
         unlatch.set(true);
         latch.set(false);
+        
 //        while (latch.get()) {
 //            if (pi.get()) {    //checks digital signal from raspberry pi -- once, not every 4s.
 //                //Initiates the trigger system upon pi detection.
@@ -199,7 +200,7 @@ public class Robot extends SimpleRobot {
                 pressed = true;
                 unlatch.set(false);
                 latch.set(true);
-                winch.set(.8);
+                winch.set(1.); //Was  set to .8 - Antonio
             }
             // Unlatch AKA: Shoot
             else if (rightStick.getTrigger()) {
@@ -240,8 +241,21 @@ public class Robot extends SimpleRobot {
             else {
                 shift_1.set(false);
                 shift_2.set(true);}
-
-            
+/*Safe Release*/
+            if (rightStick.getRawButton(11) && rightStick.getRawButton(6)){
+                winchEncoder.reset();
+                while(winchEncoder.get() < 512){
+                    unlatch.set(false);
+                    latch.set(true);
+                    winch.set(-1.);
+                    winchEncoder.reset();
+                }
+                while(winchEncoder.get() < 512){
+                    unlatch.set(true);
+                    latch.set(false);
+                    winch.set(1.);
+                }
+            }
             Timer.delay(.01);
             
         }
