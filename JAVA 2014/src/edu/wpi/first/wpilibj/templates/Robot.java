@@ -92,16 +92,18 @@ public class Robot extends SimpleRobot {
         unlatch.set(true);
         latch.set(false);
         winchEncoder.reset();
-        while(winchEncoder.get() <= 510){ //Might get caught in its own loop, not sure -Antonio
+        while(winchEncoder.get() <= 510){
            unlatch.set(true);
            latch.set(false);
            winch.set(-1.);
         }
-        winchEncoder.reset();
-        while(winchEncoder.get() <= 510){
+        if (winchEncoder.get() >= 510){
             unlatch.set(false);
             latch.set(true);
-            winch.set(0);
+        }
+        winchEncoder.reset();
+        while (winchEncoder.get() <= 510){
+            winch.set(1.);
         }
         if (lim_switch.get() == true){
             System.out.println("I am ready to go!");
@@ -118,7 +120,7 @@ public class Robot extends SimpleRobot {
 //            }
 //            //Shoots even if the pi doesn't say anything to it as a fail-safe.
 //            else if(time.get() >= 8){
-//                System.out.println("Bad pi no signal I will shoot anyway.");
+//                System.out.println("Bad pi no /.signal I will shoot anyway.");
 //                unlatch.set(true);
 //                latch.set(false);
 //            }
@@ -234,7 +236,7 @@ public class Robot extends SimpleRobot {
                 winding = false;
                 winch.stopMotor();
             }
-            else  if (pressed == false) {
+            else  if (!pressed) {
                 winch.set(rightStick.getAxis(Joystick.AxisType.kY));
                 unlatch.set(true);
                 latch.set(false);
@@ -261,24 +263,32 @@ public class Robot extends SimpleRobot {
                 shift_2.set(true);}
 /*Safe Release*/
             if (rightStick.getRawButton(11) && rightStick.getRawButton(6)){
-                winchEncoder.reset();
-                while(winchEncoder.get() < 512){
+                while(lim_switch.get() == true && winchEncoder.get() >= 0){
                     unlatch.set(false);
                     latch.set(true);
-                    winch.set(-1.);
-                    winchEncoder.reset();
+                    winch.set(-.8);
                 }
                 while(winchEncoder.get() < 512){
                     unlatch.set(true);
                     latch.set(false);
-                    winch.set(1.);
+                    winch.set(.8);
+                }
+                /*while(winchEncoder.get() < 510){
+                    unlatch.set(false);
+                    latch.set(true);
+                    winch.set(-.8);
+                }
+                while(winchEncoder.get() < 510){
+                    unlatch.set(true);
+                    latch.set(false);
+                    winch.set(.8);
                 }
                 if(lim_switch.get() == false){
                     System.out.println("The catapult has been unlatched succesfully.");
                 }
                 else{
                     System.out.println("The catapult is still latched.");
-                }
+                }*/
             }
             Timer.delay(.01);
             
