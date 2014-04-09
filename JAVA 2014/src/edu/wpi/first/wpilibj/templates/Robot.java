@@ -91,21 +91,17 @@ public class Robot extends SimpleRobot {
         Timer.delay(2); // Wait for n seconds in this instance for the ball to settle in the Catapult arm.
         unlatch.set(true);
         latch.set(false);
-        winchEncoder.reset();
-        while(winchEncoder.get() <= 510){
-           unlatch.set(true);
-           latch.set(false);
+        while(winchEncoder.get() >= 0){
            winch.set(-1.);
         }
-        if (winchEncoder.get() >= 510){
+        if (lim_switch.get() == true){
             unlatch.set(false);
             latch.set(true);
         }
-        winchEncoder.reset();
-        while (winchEncoder.get() <= 510){
+        while (winchEncoder.get() < 510){
             winch.set(1.);
         }
-        if (lim_switch.get() == true){
+        if (lim_switch.get() == true && winchEncoder.get() == 0){
             System.out.println("I am ready to go!");
         }
         else{
@@ -268,16 +264,6 @@ public class Robot extends SimpleRobot {
                     latch.set(true);
                     winch.set(-.8);
                 }
-                while(winchEncoder.get() < 512){
-                    unlatch.set(true);
-                    latch.set(false);
-                    winch.set(.8);
-                }
-                /*while(winchEncoder.get() < 510){
-                    unlatch.set(false);
-                    latch.set(true);
-                    winch.set(-.8);
-                }
                 while(winchEncoder.get() < 510){
                     unlatch.set(true);
                     latch.set(false);
@@ -288,7 +274,7 @@ public class Robot extends SimpleRobot {
                 }
                 else{
                     System.out.println("The catapult is still latched.");
-                }*/
+                }
             }
             Timer.delay(.01);
             
