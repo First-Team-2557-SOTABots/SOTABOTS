@@ -21,6 +21,7 @@ package edu.wpi.first.wpilibj.templates;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+
 public class Robot extends SimpleRobot {
     Joystick   leftStick = new Joystick(1);
     Joystick   rightStick = new Joystick(2);
@@ -45,6 +46,7 @@ public class Robot extends SimpleRobot {
     DigitalOutput mode_4 = new DigitalOutput(11);
     DigitalOutput mode_5 = new DigitalOutput(12);
     DigitalOutput[] modes = new DigitalOutput[] {mode_1,mode_2,mode_3, mode_4, mode_5};
+    AnalogChannel lsensor = new AnalogChannel(1);
     Timer time = new Timer();
     boolean    intakeDown = intakeArmUp.get();
     boolean    shifted = false;
@@ -59,6 +61,7 @@ public class Robot extends SimpleRobot {
     double     driveRight = 0;
     int        modeIndex = 0;
     int        cycle = 0;
+    double     threshhold = 4;
     double[]   coordinates = null;
     String[]   vision_coord = null;
 
@@ -88,25 +91,49 @@ public class Robot extends SimpleRobot {
         leftDrive.reset();
         rightDrive.reset();
         System.out.println("I drove forward I think...");
-        Timer.delay(2); // Wait for n seconds in this instance for the ball to settle in the Catapult arm.
-        unlatch.set(true);
-        latch.set(false);
-        while(winchEncoder.get() >= 0){
-           winch.set(-1.);
+        Timer.delay(1.25); // Wait for n seconds in this instance for the ball to settle in the Catapult arm.
+        while (time.get() <= 7.4){
+            System.out.println(lsensor.getAverageVoltage());
+            Timer.delay(.25);
+            System.out.println(time.get() + " seconds.");
+            if (lsensor.getAverageVoltage() >= threshhold){
+                unlatch.set(true);
+                latch.set(false);
+            }
         }
-        if (lim_switch.get() == true){
+        System.out.println("Finished loop.");
+        System.out.println(lsensor.getAverageVoltage());
+
+        //if (time.get() >= 7.55 ){
+            unlatch.set(true);
+            latch.set(false);
+        //}
+        System.out.println("Ni-night time.");
+      /*while (winchEncoder.get() >= 0) {
+                winch.set(-1);
+                }
+        if (lim_switch.get() && winchEncoder.get() == 0){
+                unlatch.set(false);
+                latch.set(true);
+                }
+        while (winchEncoder.get() <= 512){
+                winch.set(1);
+                }
+        if (winchEncoder.get() == 512){
+                winch.stopMotor();}
+        
+        /*while(winchEncoder.get() <= 510 ) { //&& lim_switch.get() == false){
+            System.out.println(winchEncoder.get());
+            winch.set(-1.);
+        }
+        if (lim_switch.get() && winchEncoder.get() == 0){
             unlatch.set(false);
             latch.set(true);
         }
-        while (winchEncoder.get() < 510){
+        while (winchEncoder.get() >= 510){
             winch.set(1.);
         }
-        if (lim_switch.get() == true && winchEncoder.get() == 0){
-            System.out.println("I am ready to go!");
-        }
-        else{
-            System.out.println("For some reason I didn't wind far enough.");
-        }
+        winch.stopMotor();*/
 //        while (latch.get()) {
 //            if (pi.get()) {    //checks digital signal from raspberry pi -- once, not every 4s.
 //                //Initiates the trigger system upon pi detection.
@@ -130,7 +157,8 @@ public class Robot extends SimpleRobot {
         leftDrive.start();
         leftDrive.reset();
         drive.setSafetyEnabled(false);
-
+        unlatch.set(false);
+        latch.set(true);
         while (isOperatorControl() && isEnabled()) {
             SmartDashboard.putString("LOCK STATE: ",latched);
             SmartDashboard.putNumber("WINCH ENCODER: ", winchEncoder.get());
@@ -212,7 +240,7 @@ public class Robot extends SimpleRobot {
             }
             // This is set differently between practice and competition bots
             // because the nylon stop length is (and will be) different.
-            else if (lim_switch.get() == false && winchEncoder.get() < 510 && winding) { //put back to 550 for competition bot!
+            else if (lim_switch.get() == false && winchEncoder.get() < 512 && winding) { //put back to 550 for competition bot!
                 pressed = true;
                 unlatch.set(false);
                 latch.set(true);
@@ -225,6 +253,8 @@ public class Robot extends SimpleRobot {
                 latch.set(false);
                 winch.set(rightStick.getAxis(Joystick.AxisType.kY));
                 latched = "Unlatched";
+              //Timer.delay(.1);
+              //intakeDown = false;
             }
             else if (pressed && winchEncoder.get() >= 510) { //put back to 550 for competition bot!
                 unlatch.set(false);
@@ -259,23 +289,28 @@ public class Robot extends SimpleRobot {
                 shift_2.set(true);}
 /*Safe Release*/
             if (rightStick.getRawButton(11) && rightStick.getRawButton(6)){
-                while(lim_switch.get() == true && winchEncoder.get() >= 0){
+                while(winchEncoder.get() >= 0){
                     unlatch.set(false);
                     latch.set(true);
                     winch.set(-.8);
                 }
-                while(winchEncoder.get() < 510){
+                while(winchEncoder.get() <= 512){
                     unlatch.set(true);
                     latch.set(false);
                     winch.set(.8);
                 }
-                if(lim_switch.get() == false){
+                winch.stopMotor();
+                if(lim_switch.get() == false && winchEncoder.get() < 512){
                     System.out.println("The catapult has been unlatched succesfully.");
                 }
                 else{
                     System.out.println("The catapult is still latched.");
                 }
             }
+/*Voltage printout  
+            if (rightStick.getRawButton(12)){
+                System.out.println(lsensor.getAverageVoltage() + " Volts");
+            }*/
             Timer.delay(.01);
             
         }
