@@ -22,7 +22,7 @@ import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 
-public class Robot extends SimpleRobot {
+public class RobotTemplate extends SimpleRobot {
     Joystick   leftStick = new Joystick(1);
     Joystick   rightStick = new Joystick(2);
     RobotDrive drive = new RobotDrive(1,2);
@@ -61,6 +61,7 @@ public class Robot extends SimpleRobot {
     double     driveRight = 0;
     int        modeIndex = 0;
     int        cycle = 0;
+    int        winchEncoderVal = 510;
     double     threshhold = 4;
     double[]   coordinates = null;
     String[]   vision_coord = null;
@@ -240,11 +241,11 @@ public class Robot extends SimpleRobot {
             }
             // This is set differently between practice and competition bots
             // because the nylon stop length is (and will be) different.
-            else if (lim_switch.get() == false && winchEncoder.get() < 512 && winding) { //put back to 550 for competition bot!
+            else if (lim_switch.get() == false && winchEncoder.get() < winchEncoderVal + 2 && winding) { //put back to 550 for competition bot!
                 pressed = true;
                 unlatch.set(false);
                 latch.set(true);
-                winch.set(1.); //Was  set to .8 - Antonio
+                winch.set(.6); //Was  set to .8 - Antonio
             }
             // Unlatch AKA: Shoot
             else if (rightStick.getTrigger()) {
@@ -256,7 +257,7 @@ public class Robot extends SimpleRobot {
               //Timer.delay(.1);
               //intakeDown = false;
             }
-            else if (pressed && winchEncoder.get() >= 510) { //put back to 550 for competition bot!
+            else if (pressed && winchEncoder.get() >= winchEncoderVal) { //put back to 550 for competition bot!
                 unlatch.set(false);
                 latch.set(true);
                 winding = false;
@@ -292,15 +293,15 @@ public class Robot extends SimpleRobot {
                 while(winchEncoder.get() >= 0){
                     unlatch.set(false);
                     latch.set(true);
-                    winch.set(-.8);
+                    winch.set(-.6);
                 }
-                while(winchEncoder.get() <= 512){
+                while(winchEncoder.get() <= winchEncoderVal + 2){
                     unlatch.set(true);
                     latch.set(false);
-                    winch.set(.8);
+                    winch.set(.6);
                 }
                 winch.stopMotor();
-                if(lim_switch.get() == false && winchEncoder.get() < 512){
+                if(lim_switch.get() == false && winchEncoder.get() < winchEncoderVal + 2){
                     System.out.println("The catapult has been unlatched succesfully.");
                 }
                 else{
