@@ -44,8 +44,20 @@ public class Map {
 }
 /*Button Mapping
 //Left Joystick
-    Button
+    Axis = drive
+    Button 3 = Shift true
+    Button 4 = shift false
+    Button 5 = arm up
+    Button 6 = arm down
+    Button 7 = Mode Index 1
+    Button 8 = Mode Index 2
+    Button 9 = winds down and prints encoder value
+    Button 10 = winds up and prints encoder value
 //Right Joystick
+    Y axis = manual winch w/o latching
     Button 2 = Winding
+    Buttons 3,4 = Intake in, Intake out
+    Button 5 = Prints Encoder Value
+    Button 
     Button 11 & 6 = Safe Release
 */
